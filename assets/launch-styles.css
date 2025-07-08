@@ -22,7 +22,7 @@ Layout and container styles
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
@@ -38,6 +38,12 @@ Form elements and controls
 -------------------------------------*/
 .label {
     font-weight: 500;
+}
+
+.includes-i {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
 }
 
 .form-control {
@@ -238,7 +244,7 @@ Resource allocation and matching styles
 }
 
 .resource-item:not(:last-child) {
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .resource-value {
@@ -390,7 +396,7 @@ Tooltip styles
     transition: all 0.2s ease;
     z-index: 100;
     pointer-events: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     letter-spacing: 0.2px;
     text-transform: capitalize;
     font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -401,6 +407,7 @@ Tooltip styles
     visibility: visible;
 }
 
+
 /*------------------------------------
 Responsive styles
 -------------------------------------*/
@@ -408,16 +415,16 @@ Responsive styles
     .resource-preview-grid {
         grid-template-columns: 1fr 1fr;
     }
-    
+
     .metadata-section {
         flex-direction: row;
     }
-    
+
     .metadata-label {
         width: 180px;
         margin-bottom: 0;
     }
-    
+
     .metadata-value {
         flex: 1;
     }
