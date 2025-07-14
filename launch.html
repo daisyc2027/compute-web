@@ -702,16 +702,48 @@
                             gpuContainer.appendChild(gpuButton);
                         }
 
-                        // Update button data and text
-                        gpuButton.dataset.total = filteredGpuTypes[gpuType].total || 0;
-                        gpuButton.dataset.used = filteredGpuTypes[gpuType].used || 0;
-                        gpuButton.textContent = `${filteredGpuTypes[gpuType].gpu_name || gpuType} (${available})`;
+                        // Only render buttons for GPU types with availability > 0
+                        if (available > 0) {
+                            if (!gpuButton) {
+                                // Create new button if it doesn't exist
+                                gpuButton = document.createElement('button');
+                                gpuButton.classList.add('button', 'gpu-option', 'mr-2', 'mb-2');
+                                gpuButton.dataset.type = gpuType;
+                                gpuButton.dataset.name = filteredGpuTypes[gpuType].gpu_name || gpuType;
 
-                        // Restore selection state
-                        if (currentSelections.has(gpuType)) {
-                            gpuButton.classList.add('is-primary', 'is-selected');
-                        } else {
-                            gpuButton.classList.remove('is-primary', 'is-selected');
+                                // Set fixed width and height for consistent button size
+                                gpuButton.style.width = '150px';
+                                gpuButton.style.height = '40px';
+
+                                // Add click event listener
+                                gpuButton.addEventListener('click', function () {
+                                    this.classList.toggle('is-primary');
+                                    this.classList.toggle('is-selected');
+
+                                    // Update hidden inputs with selected GPU types
+                                    updateSelectedGpuTypes();
+
+                                    // Setup GPU-node options based on selected GPU types
+                                    setupGpuNodeOptionsForMulti();
+                                });
+
+                                gpuContainer.appendChild(gpuButton);
+                            }
+
+                            // Update button data and text
+                            gpuButton.dataset.total = filteredGpuTypes[gpuType].total || 0;
+                            gpuButton.dataset.used = filteredGpuTypes[gpuType].used || 0;
+                            gpuButton.textContent = `${filteredGpuTypes[gpuType].gpu_name || gpuType} (${available})`;
+
+                            // Restore selection state
+                            if (currentSelections.has(gpuType)) {
+                                gpuButton.classList.add('is-primary', 'is-selected');
+                            } else {
+                                gpuButton.classList.remove('is-primary', 'is-selected');
+                            }
+                        } else if (gpuButton) {
+                            // Remove button if availability is 0 and it exists
+                            gpuButton.remove();
                         }
                     }
 
@@ -724,6 +756,30 @@
 
                     // Always show the GPU type selection section
                     gpuContainer.style.display = 'block';
+
+                    // Check if there are any GPU buttons left
+                    const gpuButtons = gpuContainer.querySelectorAll('.gpu-option');
+
+                    // If no buttons, display a message
+                    if (gpuButtons.length === 0) {
+                        // Create or update the "no GPUs available" message
+                        let noGpusMessage = document.getElementById('no-gpus-message');
+                        if (!noGpusMessage) {
+                            noGpusMessage = document.createElement('p');
+                            noGpusMessage.id = 'no-gpus-message';
+                            noGpusMessage.style.color = '#666'; // Optional: Style the message
+                            noGpusMessage.style.fontSize = '16px';
+                            noGpusMessage.style.marginTop = '10px';
+                            noGpusMessage.textContent = 'Please select a region first.';
+                            gpuContainer.appendChild(noGpusMessage);
+                        }
+                    } else {
+                        // Remove the "no GPUs available" message if there are buttons
+                        const noGpusMessage = document.getElementById('no-gpus-message');
+                        if (noGpusMessage) {
+                            noGpusMessage.remove();
+                        }
+                    }
                 }
 
 
@@ -1351,6 +1407,32 @@
                     });
                 });
             }
+
+            //Collapsable advanced options section
+
+            document.addEventListener('DOMContentLoaded', function () {
+
+                const arrowBtn = document.getElementById('collapse-arrow-btn');
+                const content = document.getElementById('advanced-options-content');
+                // Make both the header and arrow clickable
+                document.getElementById('advanced-options-header').addEventListener('click', function (e) {
+                    // Prevent double toggle if clicking arrow button
+                    if (e.target === arrowBtn || arrowBtn.contains(e.target)) return;
+                    arrowBtn.click();
+                });
+                arrowBtn.addEventListener('click', function () {
+                    const expanded = arrowBtn.getAttribute('aria-expanded') === 'true';
+                    arrowBtn.setAttribute('aria-expanded', String(!expanded));
+                    if (expanded) {
+                        content.classList.remove('show');
+                        content.setAttribute('hidden', '');
+                    } else {
+                        content.classList.add('show');
+                        content.removeAttribute('hidden');
+                    }
+                });
+            });
+
         </script>
 
 
@@ -1610,42 +1692,57 @@
 
             <!-- Advanced Options -->
             <div class="form-section">
-                <h3 class="section-title">Advanced Options</h3>
 
+                <div class="section-header" id="advanced-options-header">
+                    <h3 class="collapsable-section-title">Advanced Options</h3>
 
-                <!-- Exposed Ports -->
-                <div class="field">
-                    <label class="label includes-i">Exposed Ports <i class="fa-solid fa-circle-info"
-                        data-tooltip="Exposed ports are network ports that your application makes available to accept connections from outside the container. Specify which ports should be accessible for services like web servers, SSH, or APIs."></i>
-                </label></label>
-                    <div class="control">
-                        <input class="input exposed-port" type="text"
-                            placeholder="Comma-separated ports (e.g.: 22,80,8080)">
-                    </div>
+                    <button class="collapse-arrow" aria-expanded="false" aria-controls="advanced-options-content"
+                        id="collapse-arrow-btn" type="button" tabindex="0" aria-label="Toggle advanced options">
+                        <!-- Right-pointing arrow SVG (chevron) -->
+                        <svg viewBox="0 0 20 20">
+                            <polyline points="6,4 14,10 6,16" stroke="currentColor" stroke-width="2.2" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+
                 </div>
 
-                <!-- SSH Option - hidden, handled by code logic -->
-                <div id="ssh-section" class="field" style="display: none;">
-                    <label class="label">Enable SSH</label>
-                    <div class="control">
-                        <input type="checkbox" name="use_ssh" style="width: 20px; height: 20px;">
-                    </div>
-                </div>
-
-                <!-- Environment Variables -->
-                <label class="label includes-i">Environment Variables <i class="fa-solid fa-circle-info"
-                        data-tooltip="Environment variables are key-value settings that programs can use at runtime to configure applications without changing code."></i>
-                </label>
-                <div class="field env-var-container">
-                    <div class="field is-grouped env-var">
-                        <div class="control is-expanded">
-                            <input class="input" type="text" name="env_name" placeholder="Variable name">
-                        </div>
-                        <div class="control is-expanded">
-                            <input class="input" type="text" name="env_value" placeholder="Value">
-                        </div>
+                <div class="collapsible-content" id="advanced-options-content" aria-labelledby="advanced-options-header"
+                    hidden>
+                    <!-- Exposed Ports -->
+                    <div class="field">
+                        <label class="label includes-i">Exposed Ports <i class="fa-solid fa-circle-info"
+                                data-tooltip="Exposed ports are network ports that your application makes available to accept connections from outside the container. Specify which ports should be accessible for services like web servers, SSH, or APIs."></i>
+                        </label></label>
                         <div class="control">
-                            <button class="button is-primary" id="add_env_var">＋</button>
+                            <input class="input exposed-port" type="text"
+                                placeholder="Comma-separated ports (e.g.: 22,80,8080)">
+                        </div>
+                    </div>
+
+                    <!-- SSH Option - hidden, handled by code logic -->
+                    <div id="ssh-section" class="field" style="display: none;">
+                        <label class="label">Enable SSH</label>
+                        <div class="control">
+                            <input type="checkbox" name="use_ssh" style="width: 20px; height: 20px;">
+                        </div>
+                    </div>
+
+                    <!-- Environment Variables -->
+                    <label class="label includes-i">Environment Variables <i class="fa-solid fa-circle-info"
+                            data-tooltip="Environment variables are key-value settings that programs can use at runtime to configure applications without changing code."></i>
+                    </label>
+                    <div class="field env-var-container">
+                        <div class="field is-grouped env-var">
+                            <div class="control is-expanded">
+                                <input class="input" type="text" name="env_name" placeholder="Variable name">
+                            </div>
+                            <div class="control is-expanded">
+                                <input class="input" type="text" name="env_value" placeholder="Value">
+                            </div>
+                            <div class="control">
+                                <button class="button is-primary" id="add_env_var">＋</button>
+                            </div>
                         </div>
                     </div>
                 </div>
